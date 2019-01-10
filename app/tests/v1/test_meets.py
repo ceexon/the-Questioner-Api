@@ -85,7 +85,7 @@ class TestMeetup(BaseTest):
 
     def test_get_all_upcoming_success(self):
         response = self.client.get(
-            '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
+            '/api/v1/meetups/upcoming', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_get_single_meetup_success(self):
