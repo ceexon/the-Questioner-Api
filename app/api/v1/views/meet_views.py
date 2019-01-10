@@ -37,3 +37,11 @@ def create_meetup():
 
     except:
         return jsonify({"status": 204, "error": "Meetup data is required"}), 204
+
+
+@v1_mod.route('/meetups', methods=['GET'])
+def view_meetup():
+    if Meetups == []:
+        return jsonify({"status": 404, "error": "no meetups found"}), 404
+
+    return jsonify({"status": 200, "data": Meetups}), 200
