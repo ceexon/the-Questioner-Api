@@ -1,5 +1,5 @@
 import unittest
-from app import my_app
+from app import create_app
 import os
 import json
 import pytest
@@ -9,7 +9,7 @@ from app.api.v1.models.models import Questions
 
 class TestQuestions(unittest.TestCase):
     def setUp(self):
-        self.app = my_app
+        self.app = create_app("testing")
         self.client = self.app.test_client()
 
         self.question1 = {}
@@ -62,7 +62,7 @@ class TestQuestions(unittest.TestCase):
         response = self.client.patch(
             '/api/v1/questions/1/upvote')
         q_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 202)
         self.assertEqual(q_resp["data"], "You have accepted this question")
 
@@ -71,7 +71,7 @@ class TestQuestions(unittest.TestCase):
         response = self.client.patch(
             '/api/v1/questions/1/downvote')
         q_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(q_resp["data"], "You have rejected this question")
 
@@ -79,6 +79,6 @@ class TestQuestions(unittest.TestCase):
         response = self.client.patch(
             '/api/v1/questions/100/upvote')
         q_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(q_resp["error"], "question not found")
