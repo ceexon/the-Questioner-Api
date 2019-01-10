@@ -54,6 +54,7 @@ class BaseTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+
 class TestMeetup(BaseTest):
     def test_created_meetup_success(self):
         response = self.client.post(
@@ -67,7 +68,8 @@ class TestMeetup(BaseTest):
             '/api/v1/meetups', data=json.dumps(self.meetup11), content_type="application/json")
         meet_resp = json.loads(response.get_data(as_text=True))
         self.assertEqual(response.status_code, 422)
-        self.assertEqual(meet_resp["error"], "fill all fields(topic,location,happenOn)")
+        self.assertEqual(meet_resp["error"],
+                         "fill all fields(topic,location,happenOn)")
 
     def test_get_all_meetups_success(self):
         response = self.client.get(
