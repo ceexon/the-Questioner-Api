@@ -1,6 +1,7 @@
 from flask import Flask, Blueprint
 from instanse.config import app_config
 from app.api.v1.views.user_views import v1_mod
+from app.api.v1.views.meet_views import v1_mod
 
 my_app = Flask(__name__)
 # my_app.config.from_object(app_config["development"])
