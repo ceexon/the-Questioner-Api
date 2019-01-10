@@ -37,3 +37,17 @@ def add_meetup_question():
 
     except:
         return jsonify({"status": 204, "error": "Meetup data is required"}), 204
+
+
+@v1_mod.route("/questions/<q_id>/upvote", methods=["PATCH"])
+def upvote_quiz(q_id):
+    try:
+        q_id = int(q_id)
+    except:
+        return jsonify({"status": 400, "error": "invalid question id"}), 400
+
+    for question in Questions:
+        if question["id"] == q_id:
+            return jsonify({"status": 202, "data": "You have accepted this question"}), 202
+
+    return jsonify({"status": 404, "error": "question not found"}), 404
