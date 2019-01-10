@@ -62,8 +62,8 @@ class TestQuestions(unittest.TestCase):
             '/api/v1/questions/1/upvote')
         q_resp = json.loads(response.data.decode(
             'utf-8', my_app.config['SECRET_KEY']))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(q_resp["data"], "upvoted")
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(q_resp["data"], "You have accepted this question")
 
     def test_downvote_question_success(self):
         response = self.client.patch(
