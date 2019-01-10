@@ -59,7 +59,7 @@ Badges
 
 7. Install requirement
 
-   > `pip install requirements.txt`
+   > `pip install -r requirements.txt`
 
 8. Run the app
 
