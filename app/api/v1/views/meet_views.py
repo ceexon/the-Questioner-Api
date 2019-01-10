@@ -45,3 +45,11 @@ def view_meetup():
         return jsonify({"status": 404, "error": "no meetups found"}), 404
 
     return jsonify({"status": 200, "data": Meetups}), 200
+
+
+@v1_mod.route('/meetups/upcoming', methods=['GET'])
+def view_upcoming_meetup():
+    if Meetups == []:
+        return jsonify({"status": 404, "error": "no meetups found"}), 404
+
+    return jsonify({"status": 200, "data": Meetups}), 200
