@@ -45,4 +45,45 @@ def user_signup():
         return jsonify({"status": 201, "data": new_user}), 201
 
     except:
-        return jsonify({"status": 400, "error": "signup data is required"}), 400
+        return jsonify({"status": 204, "error": "signup data is required"}), 204
+
+
+@v1_mod.route("/login", methods=['POST'])
+def user_login():
+    try:
+        log_data = request.get_json()
+        if not log_data:
+            return jsonify({"status": 204, "error": "No data found"}), 204
+
+        try:
+            if not log_data["userlog"] or not log_data["password"]:
+                return jsonify({"status": 422, "error": "all fields are required(password,userlog(userName/email))"}), 422
+
+        except:
+            return jsonify({"status": 400, "error": "a key field is missing"}), 400
+
+        actual_user = log_data["userlog"]
+        using = ""
+        if '@' in actual_user:
+            using = "email"
+        else:
+            using = "userName"
+
+        exists = False
+
+        if using == "email":
+            for user in Users:
+                if user["email"] == actual_user and user["password"] == log_data["password"]:
+                    exists = True
+        elif using == "userName":
+            for user in Users:
+                if user["userName"] == actual_user and user["password"] == log_data["password"]:
+                    exists = True
+
+        if exists == True:
+            return jsonify({"status": 200, "data": "logged in successfully"}), 200
+
+        return jsonify({"status": 401, "data": "invalid login credentials"}), 401
+
+    except:
+        return jsonify({"status": 204, "error": "Login is required"})

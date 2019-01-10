@@ -1,5 +1,6 @@
 import unittest
 from app import my_app
+from app.api.v1.models.models import Users
 import os
 import json
 import pytest
@@ -90,30 +91,6 @@ class BaseTest(unittest.TestCase):
             "password": "$$22BBkk"
         }
 
-        # login successful username
-        self.userlogin1 = {
-            "userlog": "zonecc",
-            "password": "$22BBkk"
-        }
-
-        # login successful failed email
-        self.userlogin2 = {
-            "userlog": "m_m_m_mm@gmail.com",
-            "password": "$22BBkk"
-        }
-
-        # login fail username
-        self.userlogin3 = {
-            "userlog": "zonec",
-            "password": "$22BBkk"
-        }
-
-        # login fail wrong email
-        self.userlogin4 = {
-            "userlog": "trevbkbk@gmail.com",
-            "password": ""
-        }
-
         # loginand signup fail - no data
         self.nodata = {}
 
@@ -121,7 +98,7 @@ class BaseTest(unittest.TestCase):
         pass
 
 
-class Testusers(BaseTest):
+class TestUserSignUp(BaseTest):
     """Tests user signup and login"""
 
     def test_signup_successful(self):
@@ -160,13 +137,65 @@ class Testusers(BaseTest):
             '/api/v1/signup', data=json.dumps(self.nodata), content_type="application/json")
         self.assertEqual(response.status_code, 204)
 
+
+class TestUserLogin(unittest.TestCase):
+    def setUp(self):
+        self.app = my_app
+        self.client = self.app.test_client()
+
+        self.user_data_return = {
+            "id": 1,
+            "firstName": "Trevor",
+            "lastName": "Kurland",
+            "otherName": "Burudi",
+            "userName": "trevor",
+            "email": "trevbk@gmail.com",
+            "phone": "+254712345678",
+            "password": "$$22BBkk",
+            "regDate": time_now.strftime("%D"),
+            "isAdmin": True
+        }
+
+        global Users
+        Users.append(self.user_data_return)
+
+        # login successful username
+        self.userlogin1 = {
+            "userlog": "trevor",
+            "password": "$$22BBkk"
+        }
+
+        # login successful failed email
+        self.userlogin2 = {
+            "userlog": "trevbk@gmail.com",
+            "password": "$$22BBkk"
+        }
+
+        # login fail username
+        self.userlogin3 = {
+            "userlog": "zonec",
+            "password": "$22BBkk"
+        }
+
+        # login fail wrong email
+        self.userlogin4 = {
+            "userlog": "trevbkbk@gmail.com",
+            "password": ""
+        }
+
+        # loginand signup fail - no data
+        self.nodata = {}
+
+    def tearDown(self):
+        pass
+
     def test_user_login_username_success(self):
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
         json_response = json.loads(response.data.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json_response["data"],
-                         "logged in successfully with username")
+                         "logged in successfully")
 
     def test_user_login_email_success(self):
         response = self.client.post(
@@ -174,18 +203,24 @@ class Testusers(BaseTest):
         json_response = json.loads(response.data.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json_response["data"],
-                         "logged in successfully with email")
+                         "logged in successfully")
 
     def test_user_login_fail_user_email(self):
         response = self.client.post(
-            '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
+            '/api/v1/login', data=json.dumps(self.userlogin3), content_type="application/json")
         json_response = json.loads(response.data.decode("utf-8"))
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(json_response["data"], "logged in failed")
+        self.assertEqual(json_response["data"], "invalid login credentials")
+
+    def test_user_login_fail_user_email_cred(self):
+        response = self.client.post(
+            '/api/v1/login', data=json.dumps(self.userlogin4), content_type="application/json")
+        json_response = json.loads(response.data.decode("utf-8"))
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(
+            json_response["error"], "all fields are required(password,userlog(userName/email))")
 
     def test_empty_login_detail(self):
         response = self.client.post(
-            '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(json_response["data"], "please fill all fields")
+            '/api/v1/login', data=json.dumps(self.nodata), content_type="application/json")
+        self.assertEqual(response.status_code, 204)
