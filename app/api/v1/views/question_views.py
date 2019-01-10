@@ -51,3 +51,17 @@ def upvote_quiz(q_id):
             return jsonify({"status": 202, "data": "You have accepted this question"}), 202
 
     return jsonify({"status": 404, "error": "question not found"}), 404
+
+
+@v1_mod.route("/questions/<q_id>/downvote", methods=["PATCH"])
+def downvote_quiz(q_id):
+    try:
+        q_id = int(q_id)
+    except:
+        return jsonify({"status": 400, "error": "invalid question id"}), 400
+
+    for question in Questions:
+        if question["id"] == q_id:
+            return jsonify({"status": 200, "data": "You have rejected this question"}), 200
+
+    return jsonify({"status": 404, "error": "question not found"}), 404
