@@ -70,3 +70,21 @@ def view_single_meetup(m_id):
             return jsonify({"status": 200, "data": meet})
 
     return jsonify({"status": 404, "data": "meetup not found"}), 404
+
+
+@v1_mod.route('/meetups/<m_id>', methods=['DELETE'])
+def delete_meetup(m_id):
+    if Meetups == []:
+        return jsonify({"status": 404, "error": "no meetups found"}), 404
+
+    try:
+        m_id = int(m_id)
+    except:
+        return jsonify({"status": 400, "error": "invalid meet id,use int"}), 400
+
+    for meet in Meetups:
+        if meet["id"] == m_id:
+            Meetups.remove(meet)
+            return jsonify({"status": 200, "data": "meetup deleted successfully"}), 200
+
+    return jsonify({"status": 404, "data": "meetup not found"}), 404

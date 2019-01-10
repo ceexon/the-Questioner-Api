@@ -80,11 +80,13 @@ class TestMeetup(BaseTest):
         self.assertEqual(response.status_code, 204)
 
     def test_get_all_meetups_success(self):
+        Meetups.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_get_all_upcoming_success(self):
+        Meetups.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups/upcoming', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -104,15 +106,9 @@ class TestMeetup(BaseTest):
     def test_delete_meetup_fail(self):
         response = self.client.delete(
             '/api/v1/meetups/1000', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(meet_resp["data"], "meetup not found")
 
     def test_delete_meetup_success(self):
         response = self.client.delete(
             '/api/v1/meetups/1', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(meet_resp["data"], "meetup deleted successfully")
