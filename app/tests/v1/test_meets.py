@@ -59,17 +59,24 @@ class TestMeetup(BaseTest):
     def test_created_meetup_success(self):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.get_data(as_text=True))
+        meet_resp = json.loads(response.data.decode(
+            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(meet_resp["data"], self.meetup1created)
 
     def test_created_meetup_fail(self):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.meetup11), content_type="application/json")
-        meet_resp = json.loads(response.get_data(as_text=True))
+        meet_resp = json.loads(response.data.decode(
+            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 422)
         self.assertEqual(meet_resp["error"],
-                         "fill all fields(topic,location,happenOn)")
+                         "These fields are required(topic,location,happenOn)")
+
+    def test_created_meetup_fail_no_data(self):
+        response = self.client.post(
+            '/api/v1/meetups', data=json.dumps(self.nodata), content_type="application/json")
+        self.assertEqual(response.status_code, 204)
 
     def test_get_all_meetups_success(self):
         response = self.client.get(
@@ -84,27 +91,31 @@ class TestMeetup(BaseTest):
     def test_get_single_meetup_success(self):
         response = self.client.get(
             '/api/v1/meetups/1', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.get_data(as_text=True))
+        meet_resp = json.loads(response.data.decode(
+            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meet_resp["data"], self.meetup1)
 
     def test_get_single_meetup_fail(self):
         response = self.client.get(
             '/api/v1/meetups/1000', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.get_data(as_text=True))
+        meet_resp = json.loads(response.data.decode(
+            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(meet_resp["data"], "meetup not found")
 
     def test_delete_meetup_fail(self):
         response = self.client.delete(
             '/api/v1/meetups/1000', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.get_data(as_text=True))
+        meet_resp = json.loads(response.data.decode(
+            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(meet_resp["data"], "meetup not found")
 
     def test_delete_meetup_success(self):
         response = self.client.delete(
             '/api/v1/meetups/1', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.get_data(as_text=True))
+        meet_resp = json.loads(response.data.decode(
+            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meet_resp["data"], "meetup deleted successfully")
