@@ -31,6 +31,8 @@ def add_meetup_question():
             new_que["id"] = 1
 
         new_que["createOn"] = time_now.strftime("%d %h %Y")
+        new_que["upvotes"] = 0
+        new_que["downvotes"] = 0
 
         Questions.append(new_que)
         return jsonify({"status": 201, "data": "question added successfully"}), 201
