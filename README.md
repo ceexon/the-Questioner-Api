@@ -9,7 +9,7 @@ The questioner app is a web that allows users who are attendees of a meetup to b
 Badges
 ---
 [![Build Status](https://travis-ci.org/kburudi/the-Questioner-Api.svg?branch=develop)](https://travis-ci.org/kburudi/the-Questioner-Api)
-[![Coverage Status](https://coveralls.io/repos/github/kburudi/the-Questioner-Api/badge.svg?branch=develop)](https://coveralls.io/github/kburudi/the-Questioner-Api?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/kburudi/the-Questioner-Api/badge.svg?branch=develop)](https://coveralls.io/github/kburudi/the-Questioner-Api?branch=develop) :smiley:
 
 
 ## What is required
