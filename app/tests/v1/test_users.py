@@ -1,10 +1,11 @@
 import unittest
-from app import my_app
+from app import create_app
 from app.api.v1.models.models import Users
 import os
 import json
 import pytest
 import datetime
+
 
 time_now = datetime.datetime.now()
 
@@ -13,7 +14,7 @@ class BaseTest(unittest.TestCase):
     """Base TestCase for user tests"""
 
     def setUp(self):
-        self.app = my_app
+        self.app = create_app("testing")
         self.client = self.app.test_client()
 
         # successful
@@ -110,7 +111,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.big_miss), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(sign_resp["error"], "a key field is missing")
         self.assertEqual(response.status_code, 400)
 
@@ -118,7 +119,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.no_username), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(
             sign_resp["error"], "all fields are required(firstName,lastName,password,userName,phone and email)")
         self.assertEqual(response.status_code, 422)
@@ -127,7 +128,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.usernametaken), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(sign_resp["error"],
                          "user with that name already exists")
         self.assertEqual(response.status_code, 409)
@@ -140,7 +141,7 @@ class TestUserSignUp(BaseTest):
 
 class TestUserLogin(unittest.TestCase):
     def setUp(self):
-        self.app = my_app
+        self.app = create_app("testing")
         self.client = self.app.test_client()
 
         self.user_data_return = {

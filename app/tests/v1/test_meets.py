@@ -1,5 +1,5 @@
 import unittest
-from app import my_app
+from app import create_app
 import os
 import json
 import pytest
@@ -10,7 +10,7 @@ from app.api.v1.models.models import Meetups
 class BaseTest(unittest.TestCase):
 
     def setUp(self):
-        self.app = my_app
+        self.app = create_app("testing")
         self.client = self.app.test_client()
 
         target_time = datetime.datetime.now() + datetime.timedelta(days=7)
@@ -61,7 +61,7 @@ class TestMeetup(BaseTest):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
         meet_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(meet_resp["data"], self.meetup1created)
 
@@ -69,7 +69,7 @@ class TestMeetup(BaseTest):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.meetup11), content_type="application/json")
         meet_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
+            'utf-8', self.app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 422)
         self.assertEqual(meet_resp["error"],
                          "These fields are required(topic,location,happenOn)")
