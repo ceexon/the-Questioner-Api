@@ -4,6 +4,7 @@ import os
 import json
 import pytest
 import datetime
+from app.api.v1.models.models import Meetups
 
 
 class BaseTest(unittest.TestCase):
@@ -89,20 +90,16 @@ class TestMeetup(BaseTest):
         self.assertEqual(response.status_code, 200)
 
     def test_get_single_meetup_success(self):
+        Meetups.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups/1', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(meet_resp["data"], self.meetup1)
 
     def test_get_single_meetup_fail(self):
+        Meetups.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups/1000', data=json.dumps(self.meetup1), content_type="application/json")
-        meet_resp = json.loads(response.data.decode(
-            'utf-8', my_app.config['SECRET_KEY']))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(meet_resp["data"], "meetup not found")
 
     def test_delete_meetup_fail(self):
         response = self.client.delete(
