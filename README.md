@@ -1,16 +1,16 @@
-Questioner
----
+## Questioner
 
 The questioner app is a web that allows users who are attendees of a meetup to be able to raise questions they would like to discuss in the meetup. The questions are then voted on by fellow users to determine which has more priority over the others. The question with most votes is deemed as one with a highest priority.
 
 ## QUESTIONER API V1
+
 ---
 
-Badges
----
+## Badges
+
 [![Build Status](https://travis-ci.org/kburudi/the-Questioner-Api.svg?branch=develop)](https://travis-ci.org/kburudi/the-Questioner-Api)
-[![Coverage Status](https://coveralls.io/repos/github/kburudi/the-Questioner-Api/badge.svg?branch=develop)](https://coveralls.io/github/kburudi/the-Questioner-Api?branch=develop) :smiley:
-
+[![Coverage Status](https://coveralls.io/repos/github/kburudi/the-Questioner-Api/badge.svg?branch=develop)](https://coveralls.io/github/kburudi/the-Questioner-Api?branch=develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/64787acec4f02bd0f907/maintainability)](https://codeclimate.com/github/kburudi/the-Questioner-Api/maintainability)
 
 ## What is required
 
@@ -65,27 +65,25 @@ Badges
 
    > `python3 run.py`
 
-
 ## Endpoints to use on postman
 
-   | Endpoints                                  |               Functions                |
-   | ------------------------------------------ | :------------------------------------: |
-   | POST/api/v1/signup                         |            create new user             |
-   | POST/api/v1/login                          |        sign in to your account         |
-   | POST/api/v1/meetups                        |             create meetups             |
-   | GET/api/v1/meetups                         |            get all meetupss            |
-   | GET/api/v1/meetups/&lt;id&gt;              |         get a specific meetups         |
-   | GET/api/v1/meetups/upcoming                |        get all upcoming meetups        |
-   | POST/api/v1/questions                      |       add question for a meetups       |
-   | GET/api/v1/questions                       | view all questions for a given meetups |
-   | POST/api/v1/meetups/&lt;id&gt;/rsvp        |     respond to meetups invitation      |
-   | PATCH/api/v1/questions/&lt;id&gt;/upvote   |           upvote a question            |
-   | PATCH/api/v1/questions/&lt;id&gt;/downvote |          downvote a question           |
-   | POST/api/v1/questions/&lt;id&gt;/          |        view a specific question        |
-   | POST/api/v1/questions/&lt;id&gt;/comment   |         comment on a question          |
-   | GET/api/v1/questions/&lt;id&gt;/comment    |    view all comments on a question     |
-   | DELETE/api/v1/meetups/&lt;id&gt;           |            delete a meetups            |
-
+| Endpoints                                  |               Functions                |
+| ------------------------------------------ | :------------------------------------: |
+| POST/api/v1/signup                         |            create new user             |
+| POST/api/v1/login                          |        sign in to your account         |
+| POST/api/v1/meetups                        |             create meetups             |
+| GET/api/v1/meetups                         |            get all meetupss            |
+| GET/api/v1/meetups/&lt;id&gt;              |         get a specific meetups         |
+| GET/api/v1/meetups/upcoming                |        get all upcoming meetups        |
+| POST/api/v1/questions                      |       add question for a meetups       |
+| GET/api/v1/questions                       | view all questions for a given meetups |
+| POST/api/v1/meetups/&lt;id&gt;/rsvp        |     respond to meetups invitation      |
+| PATCH/api/v1/questions/&lt;id&gt;/upvote   |           upvote a question            |
+| PATCH/api/v1/questions/&lt;id&gt;/downvote |          downvote a question           |
+| POST/api/v1/questions/&lt;id&gt;/          |        view a specific question        |
+| POST/api/v1/questions/&lt;id&gt;/comment   |         comment on a question          |
+| GET/api/v1/questions/&lt;id&gt;/comment    |    view all comments on a question     |
+| DELETE/api/v1/meetups/&lt;id&gt;           |            delete a meetups            |
 
 ## Authors
 
