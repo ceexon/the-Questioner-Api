@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import datetime
 from app.api.v1.models.models import Users
+from app.api.v1.utils.validations import UserValidation
 
 time_now = datetime.datetime.now()
 
@@ -11,41 +12,42 @@ v1_mod = Blueprint('apiv1', __name__)
 def user_signup():
     try:
         user_data = request.get_json()
+        validate = UserValidation(user_data)
+
         if not user_data:
             return jsonify({"status": 204, "error": "No data found"}), 204
 
-        try:
-            if not user_data["firstName"] or not user_data["lastName"] or not user_data["userName"] or not user_data["email"] or not user_data["phone"] or not user_data["password"]:
-                return jsonify({"status": 422, "error": "all fields are required(firstName,lastName,password,userName,phone and email)"}), 422
+        all_fields_present = validate.all_required_fields_signup()
+        if not all_fields_present:
+            return jsonify({"status": 400, "error": "For a successful signup ensure you input(firstName, lastName, userName, email, phone and password)"}), 400
 
-        except:
-            return jsonify({"status": 400, "error": "a key field is missing"}), 400
+        empty_field = validate.empty_fields_signup()
+        if empty_field.lstrip() != "cannot be empty!!":
+            return jsonify({"status": 422, "error": empty_field}), 422
 
-        new_user = {}
-        for key in user_data:
-            new_user[key] = user_data[key]
+        username_ok = validate.valid_username()
+        if not username_ok:
+            return jsonify({"status": 400, "error": "username can only contain a number,letter and _"}), 400
 
-        try:
-            latest = Users[-1]
-            for user in Users:
-                if user["userName"] == user_data["userName"]:
-                    return jsonify({"status": 409, "error": "user with that name already exists"}), 409
+        username_available = validate.username_exists()
+        if username_available:
+            return jsonify({"status": 409, "error": "user with that name already exists"}), 409
 
-            id = latest["id"]
-            id = id + 1
-            new_user["id"] = id
-            new_user["isAdmin"] = False
-        except:
-            new_user["id"] = 1
-            new_user["isAdmin"] = True
+        valid_email = validate.valid_email()
+        if not valid_email:
+            return jsonify({"status": 400, "error": "invalid email format"}), 400
 
-        new_user["regDate"] = time_now.strftime("%D")
+        valid_password = validate.valid_password()
+        if valid_password != 1:
+            return jsonify({"status": 400, "error": valid_password}), 400
+
+        new_user = validate.add_default_fields()
 
         Users.append(new_user)
         return jsonify({"status": 201, "data": new_user}), 201
 
     except:
-        return jsonify({"status": 204, "error": "signup data is required"}), 204
+        return jsonify({"status": 417, "error": "signup data is required"}), 417
 
 
 @v1_mod.route("/login", methods=['POST'])
