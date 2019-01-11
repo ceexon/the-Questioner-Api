@@ -15,6 +15,7 @@ class UserValidation:
 
     # validating for signup
     def all_required_fields_signup(self):
+        ""
         try:
             self.fname = self.data["firstName"]
             self.lname = self.data["lastName"]
