@@ -65,19 +65,10 @@ class TestMeetup(BaseTest):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(meet_resp["data"], self.meetup1created)
 
-    def test_created_meetup_fail(self):
-        response = self.client.post(
-            '/api/v1/meetups', data=json.dumps(self.meetup11), content_type="application/json")
-        meet_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
-        self.assertEqual(response.status_code, 422)
-        self.assertEqual(meet_resp["error"],
-                         "These fields are required(topic,location,happenOn)")
-
-    def test_created_meetup_fail_no_data(self):
+    def test_create_meetup_fail_no_data(self):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.nodata), content_type="application/json")
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)
 
     def test_get_all_meetups_success(self):
         Meetups.append(self.meetup1created)
