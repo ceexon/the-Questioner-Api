@@ -2,26 +2,46 @@ from flask import abort, make_response
 from app.api.v1.models.models import Users
 import re
 import datetime
+from functools import wraps
 
 time_now = datetime.datetime.now()
 EMAIL_REGEX = re.compile(r'(\w+[.|\w])*@(\w+[.])*\w+')
 
+class BaseValidations:
+    def __init__(self, view_data):
+        self.v_data = view_data
+
+    def check_required_present(self, required_fields):
+        error = ""
+        for field in required_fields:
+            try:
+                test_presence = self.v_data[field]
+                if not test_presence or not test_presence.strip():
+                    error = field + " cannot be empty!!"
+                    abort(make_response(jsonify({"status" : 400, "error" : error})))
+            except:
+                error = field + " not found"
+                return error
+
+        return 1
 
 class UserValidation:
     """ THis class validates all user data input from a user for signup and login """
 
+    required_fields = ["firstName", "lastName", "userName", "email", "phone", "password"]
+
     def __init__(self, data_to_validate):
-        self.data = data_to_validate
+        self.user_data = data_to_validate
 
     # validating for signup
     def all_required_fields_signup(self):
         try:
-            self.fname = self.data["firstName"]
-            self.lname = self.data["lastName"]
-            self.username = self.data["userName"]
-            self.email = self.data["email"]
-            self.phone = self.data["phone"]
-            self.password = self.data["password"]
+            self.fname = self.user_data["firstName"]
+            self.lname = self.user_data["lastName"]
+            self.username = self.user_data["userName"]
+            self.email = self.user_data["email"]
+            self.phone = self.user_data["phone"]
+            self.password = self.user_data["password"]
 
         except:
             return 0
@@ -94,18 +114,18 @@ class UserValidation:
 
     def add_default_fields(self):
         if len(Users) == 0:
-            self.data["id"] = 1
-            self.data["isAdmin"] = True
+            self.user_data["id"] = 1
+            self.user_data["isAdmin"] = True
         else:
             most_recent = Users[-1]
             most_recent = most_recent["id"]
             new_id = most_recent + 1
-            self.data["id"] = new_id
-            self.data["isAdmin"] = False
+            self.user_data["id"] = new_id
+            self.user_data["isAdmin"] = False
 
-        self.data["regDate"] = time_now.strftime("%D")
+        self.user_data["regDate"] = time_now.strftime("%D")
 
-        return self.data
+        return self.user_data
 
     # Validating for login
     def empty_fields_login(self):
@@ -119,8 +139,8 @@ class UserValidation:
 
     def all_required_fields_login(self):
         try:
-            self.userlog = self.data["userlog"]
-            self.password1 = self.data["password"]
+            self.userlog = self.user_data["userlog"]
+            self.password1 = self.user_data["password"]
 
         except:
             return "both username/email and password are required"
@@ -162,3 +182,30 @@ class UserValidation:
                     return "loggged in as " + self.userlog
 
         return 0
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+
+        if "x-access-token" in request.headers:
+            token = request.headers['x-access-token']
+
+        if not token:
+            return jsonify({"message": "Token is missing"}), 401
+
+        try:
+            data = jwt.decode(token, create_app.config["SECRET_KEY"])
+            current_user = data["public_id"]
+
+        except:
+            return jsonify({"message" : "Token is invalid or expired"}), 401
+
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+class MeetupValidations:
+    """ Validations for data entries from users on meetups creations"""
+    def __init__(self, view_data):
+        BaseValidations.__init__(self, view_data)
