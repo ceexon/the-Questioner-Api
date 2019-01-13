@@ -10,7 +10,6 @@ The questioner app is a web that allows users who are attendees of a meetup to b
 
 [![Build Status](https://travis-ci.org/kburudi/the-Questioner-Api.svg?branch=develop)](https://travis-ci.org/kburudi/the-Questioner-Api)
 [![Coverage Status](https://coveralls.io/repos/github/kburudi/the-Questioner-Api/badge.svg?branch=develop)](https://coveralls.io/github/kburudi/the-Questioner-Api?branch=develop)
-[![Maintainability](https://api.codeclimate.com/v1/badges/64787acec4f02bd0f907/maintainability)](https://codeclimate.com/github/kburudi/the-Questioner-Api/maintainability)
 
 ## What is required
 
@@ -64,6 +63,11 @@ The questioner app is a web that allows users who are attendees of a meetup to b
 8. Run the app
 
    > `python3 run.py`
+   
+9. Tsting 
+
+   > `python3 -m pytest`
+   
 
 ## Endpoints to use on postman
 
