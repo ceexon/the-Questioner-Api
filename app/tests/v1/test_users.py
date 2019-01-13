@@ -350,6 +350,7 @@ class TestUserLogin(unittest.TestCase):
 
     def test_successful_login_with_username(self):
         """ test user login successfully using username """
+        print(os.getenv("SECRET"))
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
         result = json.loads(response.data.decode("UTF-8"), KEY)
