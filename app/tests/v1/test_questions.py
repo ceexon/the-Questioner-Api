@@ -4,7 +4,7 @@ import os
 import json
 import pytest
 import datetime
-from app.api.v1.models.models import Questions
+from app.api.v1.models.models import QUESTION_LIST
 
 
 class TestQuestions(unittest.TestCase):
@@ -67,7 +67,7 @@ class TestQuestions(unittest.TestCase):
         self.assertEqual(q_resp["data"], "You have accepted this question")
 
     def test_downvote_question_success(self):
-        Questions.append({"id": 1, "topic": "my first", "body": "no body"})
+        QUESTION_LIST.append({"id": 1, "topic": "my first", "body": "no body"})
         response = self.client.patch(
             '/api/v1/questions/1/downvote')
         q_resp = json.loads(response.data.decode(
