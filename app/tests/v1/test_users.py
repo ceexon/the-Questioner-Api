@@ -360,6 +360,8 @@ class TestUserLogin(unittest.TestCase):
         """ test user login successfully using email"""
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin2), content_type="application/json")
+        result = json.loads(response.data.decode("UTF-8"), KEY)
+        self.assertEqual(result["message"], "logged in successfully")
         self.assertEqual(response.status_code, 200)
 
     def test_user_login_fail_user_email(self):
