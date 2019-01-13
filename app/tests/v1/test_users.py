@@ -6,6 +6,7 @@ import json
 import unittest
 import pytest
 from app import create_app
+KEY = os.getenv("SECRET")
 
 time_now = datetime.datetime.now()
 
@@ -180,7 +181,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.no_username), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "userName field is missing")
         self.assertEqual(response.status_code, 400)
@@ -190,7 +191,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.empty_username), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "userName cannot be empty!!")
         self.assertEqual(response.status_code, 422)
@@ -200,7 +201,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.empty_fname), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "firstName cannot be empty!!")
         self.assertEqual(response.status_code, 422)
@@ -210,7 +211,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.empty_lname), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "lastName cannot be empty!!")
         self.assertEqual(response.status_code, 422)
@@ -220,7 +221,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.empty_email), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "email cannot be empty!!")
         self.assertEqual(response.status_code, 422)
@@ -230,7 +231,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.empty_password), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "password cannot be empty!!")
         self.assertEqual(response.status_code, 422)
@@ -240,7 +241,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.empty_phone), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "phone cannot be empty!!")
         self.assertEqual(response.status_code, 422)
@@ -250,7 +251,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.invalid_username), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "username can only be a letter or _")
         self.assertEqual(response.status_code, 400)
@@ -260,7 +261,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.bad_email), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "invalid email format!!")
         self.assertEqual(response.status_code, 400)
@@ -270,7 +271,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.pass_no_caps), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "password should have number, upper and lower letters + a special character")
         self.assertEqual(response.status_code, 400)
@@ -280,7 +281,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.pass_no_chars), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
             sign_resp["error"], "password should have number, upper and lower letters + a special character")
         self.assertEqual(response.status_code, 400)
@@ -290,7 +291,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.usernametaken), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(sign_resp["error"],
                          "user with the username already exists")
         self.assertEqual(response.status_code, 409)
@@ -300,7 +301,7 @@ class TestUserSignUp(BaseTest):
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.nodata), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(sign_resp["error"], "no userdata data!!")
 
@@ -347,11 +348,25 @@ class TestUserLogin(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_successful_login_with_username(self):
+        """ test user login successfully using username """
+        response = self.client.post(
+            '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
+        result = json.loads(response.data.decode("UTF-8"), KEY)
+        self.assertEqual(result["message"], "logged in successfully")
+        self.assertEqual(response.status_code, 200)
+
+    def test_successful_login_with_email(self):
+        """ test user login successfully using email"""
+        response = self.client.post(
+            '/api/v1/login', data=json.dumps(self.userlogin2), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+
     def test_user_login_fail_user_email(self):
         """ test user login with wrong email input """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin3), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        json_response = json.loads(response.data.decode("utf-8"), KEY)
         self.assertEqual(response.status_code, 401)
         self.assertEqual(json_response["error"],
                          "invalid userName or pasword!!")
@@ -360,7 +375,7 @@ class TestUserLogin(unittest.TestCase):
         """ test when no password parameter/value is given """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin4), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        json_response = json.loads(response.data.decode("utf-8"), KEY)
         self.assertEqual(response.status_code, 422)
         self.assertEqual(
             json_response["error"], "password cannot be empty!!")
@@ -369,7 +384,7 @@ class TestUserLogin(unittest.TestCase):
         """ test when userlog parameter/value is given """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin5), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        json_response = json.loads(response.data.decode("utf-8"), KEY)
         self.assertEqual(response.status_code, 422)
         self.assertEqual(
             json_response["error"], "userlog cannot be empty!!")

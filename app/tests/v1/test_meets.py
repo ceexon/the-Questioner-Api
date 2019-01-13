@@ -5,6 +5,7 @@ import json
 import pytest
 import datetime
 from app.api.v1.models.models import MEETUP_LIST
+KEY = os.getenv("SECRET")
 
 
 class BaseTest(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestMeetup(BaseTest):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
         meet_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(meet_resp["data"], self.meetup1created)
 
