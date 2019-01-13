@@ -1,10 +1,12 @@
-import unittest
-from app import create_app
-from app.api.v1.models.models import Users
+""" tests for user endpoints"""
+
 import os
-import json
-import pytest
 import datetime
+import json
+import unittest
+import pytest
+from app import create_app
+KEY = os.getenv("SECRET")
 
 time_now = datetime.datetime.now()
 
@@ -16,8 +18,6 @@ class BaseTest(unittest.TestCase):
         """ Definig some variables to be used before each test"""
         self.app = create_app("testing")
         self.client = self.app.test_client()
-
-        # successful
         self.usercreate1 = {
             "firstName": "Trevor",
             "lastName": "Kurland",
@@ -27,8 +27,6 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk",
         }
-
-        # username taken
         self.usernametaken = {
             "firstName": "Trevor",
             "lastName": "Kurland",
@@ -38,17 +36,13 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk",
         }
-
-        # username missing
-        self.big_miss = {
+        self.no_username = {
             "firstName": "Trevor",
             "lastName": "Kurland",
             "email": "trevbk@gmail.com",
             "phone": "+254712345678",
             "password": "$$22BBkk",
         }
-
-        # bad email
         self.bad_email = {
             "firstName": "Trevor",
             "lastName": "Kurland",
@@ -57,7 +51,6 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk",
         }
-
         self.user_data_return = {
             "id": 1,
             "firstName": "Trevor",
@@ -70,8 +63,6 @@ class BaseTest(unittest.TestCase):
             "regDate": time_now.strftime("%D"),
             "isAdmin": True
         }
-
-        # missing confirmm password
         self.not_confpass = {
             "firstName": "Trevor",
             "lastName": "Kurland",
@@ -81,9 +72,7 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk"
         }
-
-        # empty userName
-        self.no_username = {
+        self.empty_username = {
             "firstName": "Trevor",
             "lastName": "Kurland",
             "otherName": "Burudi",
@@ -92,8 +81,52 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk"
         }
+        self.empty_fname = {
+            "firstName": "",
+            "lastName": "Kurland",
+            "otherName": "Burudi",
+            "userName": "trevor",
+            "email": "abc@abc.com",
+            "phone": "+254712345678",
+            "password": "$$22BBkk"
+        }
+        self.empty_lname = {
+            "firstName": "Trevor",
+            "lastName": "",
+            "otherName": "Burudi",
+            "userName": "trevor",
+            "email": "abc@abc.com",
+            "phone": "+254712345678",
+            "password": "$$22BBkk"
+        }
+        self.empty_email = {
+            "firstName": "Trevor",
+            "lastName": "Kurland",
+            "otherName": "Burudi",
+            "userName": "trevor",
+            "email": "",
+            "phone": "+254712345678",
+            "password": "$$22BBkk"
+        }
+        self.empty_password = {
+            "firstName": "Trevor",
+            "lastName": "Kurland",
+            "otherName": "Burudi",
+            "userName": "trevor",
+            "email": "abc@abc.com",
+            "phone": "+254712345678",
+            "password": ""
+        }
 
-        # invalid userName
+        self.empty_phone = {
+            "firstName": "Trevor",
+            "lastName": "Kurland",
+            "otherName": "Burudi",
+            "userName": "trevor",
+            "email": "abc@abc.com",
+            "phone": "",
+            "password": "$$22BBkk"
+        }
         self.invalid_username = {
             "firstName": "Trevor",
             "lastName": "Kurland",
@@ -103,8 +136,6 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk"
         }
-
-        # invalid userName
         self.pass_no_caps = {
             "firstName": "Trevor",
             "lastName": "Kurland",
@@ -114,19 +145,15 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22kk"
         }
-
-        # invalid userName
         self.pass_no_chars = {
             "firstName": "Trevor",
             "lastName": "Kurland",
             "otherName": "Burudi",
-            "userName": "jjsh",
-            "email": "abc@abc.com",
+            "userName": "jjshhh",
+            "email": "abnnc@abc.com",
             "phone": "+254712345678",
-            "password": "2BB2kk"
+            "password": "2BBk"
         }
-
-        # some key field missing (lastName)
         self.key_miss = {
             "firstName": "Trevor",
             "userName": "trevor",
@@ -134,8 +161,6 @@ class BaseTest(unittest.TestCase):
             "phone": "+254712345678",
             "password": "$$22BBkk"
         }
-
-        # loginand signup fail - no data
         self.nodata = {}
 
     def tearDown(self):
@@ -154,156 +179,220 @@ class TestUserSignUp(BaseTest):
     def test_missing_key_fields(self):
         """ Test when a required field is missing """
         response = self.client.post(
-            '/api/v1/signup', data=json.dumps(self.big_miss), content_type="application/json")
-        sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
-        self.assertEqual(
-            sign_resp["error"], "For a successful signup ensure you input(firstName, lastName, userName, email, phone and password)")
-        self.assertEqual(response.status_code, 400)
-
-    def test_empty_major_field(self):
-        response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.no_username), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
-            sign_resp["error"], "username cannot be empty!!")
+            sign_resp["error"], "userName field is missing")
+        self.assertEqual(response.status_code, 400)
+
+    def test_empty_username_field(self):
+        """ test user login when username field is missing """
+        response = self.client.post(
+            '/api/v1/signup', data=json.dumps(self.empty_username), content_type="application/json")
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(
+            sign_resp["error"], "userName cannot be empty!!")
+        self.assertEqual(response.status_code, 422)
+
+    def test_empty_firstname_field(self):
+        """ test user login when username field is missing """
+        response = self.client.post(
+            '/api/v1/signup', data=json.dumps(self.empty_fname), content_type="application/json")
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(
+            sign_resp["error"], "firstName cannot be empty!!")
+        self.assertEqual(response.status_code, 422)
+
+    def test_empty_lastname_field(self):
+        """ test user login when username field is missing """
+        response = self.client.post(
+            '/api/v1/signup', data=json.dumps(self.empty_lname), content_type="application/json")
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(
+            sign_resp["error"], "lastName cannot be empty!!")
+        self.assertEqual(response.status_code, 422)
+
+    def test_empty_email_field(self):
+        """ test user login when username field is missing """
+        response = self.client.post(
+            '/api/v1/signup', data=json.dumps(self.empty_email), content_type="application/json")
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(
+            sign_resp["error"], "email cannot be empty!!")
+        self.assertEqual(response.status_code, 422)
+
+    def test_empty_password_field(self):
+        """ test user login when username field is missing """
+        response = self.client.post(
+            '/api/v1/signup', data=json.dumps(self.empty_password), content_type="application/json")
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(
+            sign_resp["error"], "password cannot be empty!!")
+        self.assertEqual(response.status_code, 422)
+
+    def test_empty_phone_field(self):
+        """ test user login when username field is missing """
+        response = self.client.post(
+            '/api/v1/signup', data=json.dumps(self.empty_phone), content_type="application/json")
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(
+            sign_resp["error"], "phone cannot be empty!!")
         self.assertEqual(response.status_code, 422)
 
     def test_invalid_username(self):
+        """ test for invalid username during signup"""
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.invalid_username), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
-            sign_resp["error"], "username can only contain a number,letter and _")
+            sign_resp["error"], "username can only be a letter or _")
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_email_format(self):
+        """ test for invalid email during sign up """
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.bad_email), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
-            sign_resp["error"], "invalid email format")
+            sign_resp["error"], "invalid email format!!")
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_pass_no_caps(self):
+        """ test for wrong password format (no capital letters)"""
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.pass_no_caps), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
-            sign_resp["error"], "password has no uppercase letter")
+            sign_resp["error"], "password should have number, upper and lower letters + a special character")
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_pass_no_chars(self):
+        """ test for wrong password format with no characters """
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.pass_no_chars), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(
-            sign_resp["error"], "password has no special character(*@#$)")
+            sign_resp["error"], "password should have number, upper and lower letters + a special character")
         self.assertEqual(response.status_code, 400)
 
     def test_username_taken(self):
+        """ test for a user stempt to signup with already taken name """
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.usernametaken), content_type="application/json")
         sign_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(sign_resp["error"],
-                         "user with that name already exists")
+                         "user with the username already exists")
         self.assertEqual(response.status_code, 409)
 
     def test_no_signup_data(self):
+        """ test when no signup data is given """
         response = self.client.post(
             '/api/v1/signup', data=json.dumps(self.nodata), content_type="application/json")
-        self.assertEqual(response.status_code, 204)
+        sign_resp = json.loads(response.data.decode(
+            'utf-8', KEY))
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(sign_resp["error"], "no userdata data!!")
 
 
 class TestUserLogin(unittest.TestCase):
+    """ test for user login"""
+
     def setUp(self):
+        """ creating data for global use"""
         self.app = create_app("testing")
         self.client = self.app.test_client()
 
         self.user_data_return = {
-            "id": 1,
             "firstName": "Trevor",
             "lastName": "Kurland",
             "otherName": "Burudi",
             "userName": "trevor",
             "email": "trevbk@gmail.com",
             "phone": "+254712345678",
-            "password": "$$22BBkk",
-            "regDate": time_now.strftime("%D"),
-            "isAdmin": True
+            "password": "$$22BBkk"
         }
-
-        global Users
-        Users.append(self.user_data_return)
-
-        # login successful username
         self.userlogin1 = {
             "userlog": "trevor",
             "password": "$$22BBkk"
         }
-
-        # login successful failed email
         self.userlogin2 = {
             "userlog": "trevbk@gmail.com",
             "password": "$$22BBkk"
         }
-
-        # login fail username
         self.userlogin3 = {
             "userlog": "zonec",
             "password": "$22BBkk"
         }
-
-        # login fail wrong email
         self.userlogin4 = {
             "userlog": "trevbkbk@gmail.com",
             "password": ""
         }
-
-        # loginand signup fail - no data
+        self.userlogin5 = {
+            "userlog": "",
+            "password": "trevbkbk@gmail.comBB"
+        }
         self.nodata = {}
 
     def tearDown(self):
         pass
 
-    def test_user_login_username_success(self):
+    def test_successful_login_with_username(self):
+        """ test user login successfully using username """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        result = json.loads(response.data.decode("UTF-8"), KEY)
+        self.assertEqual(result["message"], "logged in successfully")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json_response["data"],
-                         "logged in successfully")
 
-    def test_user_login_email_success(self):
+    def test_successful_login_with_email(self):
+        """ test user login successfully using email"""
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin2), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        result = json.loads(response.data.decode("UTF-8"), KEY)
+        self.assertEqual(result["message"], "logged in successfully")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json_response["data"],
-                         "logged in successfully")
 
     def test_user_login_fail_user_email(self):
+        """ test user login with wrong email input """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin3), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        json_response = json.loads(response.data.decode("utf-8"), KEY)
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(json_response["data"], "invalid login credentials")
+        self.assertEqual(json_response["error"],
+                         "invalid userName or pasword!!")
 
-    def test_user_login_fail_user_email_cred(self):
+    def test_login_fail_empty_pass(self):
+        """ test when no password parameter/value is given """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin4), content_type="application/json")
-        json_response = json.loads(response.data.decode("utf-8"))
+        json_response = json.loads(response.data.decode("utf-8"), KEY)
         self.assertEqual(response.status_code, 422)
         self.assertEqual(
-            json_response["error"], "all fields are required(password,userlog(userName/email))")
+            json_response["error"], "password cannot be empty!!")
+
+    def test_login_fail_empty_userlog(self):
+        """ test when userlog parameter/value is given """
+        response = self.client.post(
+            '/api/v1/login', data=json.dumps(self.userlogin5), content_type="application/json")
+        json_response = json.loads(response.data.decode("utf-8"), KEY)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(
+            json_response["error"], "userlog cannot be empty!!")
 
     def test_empty_login_detail(self):
+        """ test when no email data is given """
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.nodata), content_type="application/json")
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)

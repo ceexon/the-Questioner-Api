@@ -1,91 +1,60 @@
-from flask import Blueprint, request, jsonify
+""" contains all endpoints for user functions such as signup and login """
+
+import os
 import datetime
-from app.api.v1.models.models import Users
+import jwt
+from flask import Blueprint, request, jsonify
+from app.api.v1.models.models import USER_LIST, UserModels
 from app.api.v1.utils.validations import UserValidation
-
 time_now = datetime.datetime.now()
+V1_MOD = Blueprint('apiv1', __name__)
+KEY = os.getenv("SECRET")
 
-v1_mod = Blueprint('apiv1', __name__)
 
-
-@v1_mod.route("/signup", methods=["POST"])
+@V1_MOD.route("/signup", methods=["POST"])
 def user_signup():
+    """ endpoint for user to create account """
     try:
         user_data = request.get_json()
-        validate = UserValidation(user_data)
-
         if not user_data:
-            return jsonify({"status": 204, "error": "No data found"}), 204
-
-        all_fields_present = validate.all_required_fields_signup()
-        if not all_fields_present:
-            return jsonify({"status": 400, "error": "For a successful signup ensure you input(firstName, lastName, userName, email, phone and password)"}), 400
-
-        empty_field = validate.empty_fields_signup()
-        if empty_field.lstrip() != "cannot be empty!!":
-            return jsonify({"status": 422, "error": empty_field}), 422
-
-        username_ok = validate.valid_username()
-        if not username_ok:
-            return jsonify({"status": 400, "error": "username can only contain a number,letter and _"}), 400
-
-        username_available = validate.username_exists()
-        if username_available:
-            return jsonify({"status": 409, "error": "user with that name already exists"}), 409
-
-        valid_email = validate.valid_email()
-        if not valid_email:
-            return jsonify({"status": 400, "error": "invalid email format"}), 400
-
-        valid_password = validate.valid_password()
-        if valid_password != 1:
-            return jsonify({"status": 400, "error": valid_password}), 400
-
-        new_user = validate.add_default_fields()
-
-        Users.append(new_user)
+            return jsonify({"status": 404, "error": "no userdata data!!"}), 404
+        validate = UserValidation(user_data)
+        users = UserModels(USER_LIST, user_data)
+        users.check_required_present(users.required_signup)
+        validate.valid_username()
+        validate.valid_email()
+        validate.valid_password()
+        validate.check_signup_exists()
+        new_user = users.autogen_id_and_defaults()
+        users.add_admin_status()
+        new_user = users.save_the_data()
         return jsonify({"status": 201, "data": new_user}), 201
+    except TypeError:
+        return jsonify({"status": 417, "error": "Expecting signup data!!"}), 417
 
-    except:
-        return jsonify({"status": 417, "error": "signup data is required"}), 417
+
+@V1_MOD.route("/users", methods=["GET"])
+def all_users():
+    """ Endpoint to return all users present """
+    return jsonify(USER_LIST)
 
 
-@v1_mod.route("/login", methods=['POST'])
+@V1_MOD.route("/login", methods=['POST'])
 def user_login():
+    """ endpoint for users to sign in """
     try:
         log_data = request.get_json()
         if not log_data:
-            return jsonify({"status": 204, "error": "No data found"}), 204
+            return jsonify({"status": 404, "error": "No data found"}), 404
 
-        try:
-            if not log_data["userlog"] or not log_data["password"]:
-                return jsonify({"status": 422, "error": "all fields are required(password,userlog(userName/email))"}), 422
-
-        except:
-            return jsonify({"status": 400, "error": "a key field is missing"}), 400
-
-        actual_user = log_data["userlog"]
-        using = ""
-        if '@' in actual_user:
-            using = "email"
-        else:
-            using = "userName"
-
-        exists = False
-
-        if using == "email":
-            for user in Users:
-                if user["email"] == actual_user and user["password"] == log_data["password"]:
-                    exists = True
-        elif using == "userName":
-            for user in Users:
-                if user["userName"] == actual_user and user["password"] == log_data["password"]:
-                    exists = True
-
-        if exists == True:
-            return jsonify({"status": 200, "data": "logged in successfully"}), 200
-
-        return jsonify({"status": 401, "data": "invalid login credentials"}), 401
-
-    except:
-        return jsonify({"status": 204, "error": "Login is required"})
+        users = UserModels(USER_LIST, log_data)
+        validate = UserValidation(log_data)
+        users.check_required_present(users.required_login)
+        validate.confirm_login(log_data["userlog"])
+        logged_in_user = validate.correct_details[0]
+        exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        token = jwt.encode(
+            {"password": logged_in_user['password'], 'exp': exp}, KEY)
+        return jsonify({"status": 200, "message": "logged in successfully", "token": token.decode("utf-8")}), 200
+    except TypeError:
+        return jsonify({"status": 417, "error": "Expecting Login data!!"}), 417

@@ -4,7 +4,8 @@ import os
 import json
 import pytest
 import datetime
-from app.api.v1.models.models import Meetups
+from app.api.v1.models.models import MEETUP_LIST
+KEY = os.getenv("SECRET")
 
 
 class BaseTest(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestMeetup(BaseTest):
         response = self.client.post(
             '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
         meet_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(meet_resp["data"], self.meetup1created)
 
@@ -71,25 +72,25 @@ class TestMeetup(BaseTest):
         self.assertEqual(response.status_code, 404)
 
     def test_get_all_meetups_success(self):
-        Meetups.append(self.meetup1created)
+        MEETUP_LIST.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_get_all_upcoming_success(self):
-        Meetups.append(self.meetup1created)
+        MEETUP_LIST.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups/upcoming', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_get_single_meetup_success(self):
-        Meetups.append(self.meetup1created)
+        MEETUP_LIST.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups/1', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_get_single_meetup_fail(self):
-        Meetups.append(self.meetup1created)
+        MEETUP_LIST.append(self.meetup1created)
         response = self.client.get(
             '/api/v1/meetups/1000', data=json.dumps(self.meetup1), content_type="application/json")
         self.assertEqual(response.status_code, 404)

@@ -4,7 +4,8 @@ import os
 import json
 import pytest
 import datetime
-from app.api.v1.models.models import Questions
+from app.api.v1.models.models import QUESTION_LIST
+KEY = os.getenv("SECRET")
 
 
 class TestQuestions(unittest.TestCase):
@@ -62,16 +63,16 @@ class TestQuestions(unittest.TestCase):
         response = self.client.patch(
             '/api/v1/questions/1/upvote')
         q_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(response.status_code, 202)
         self.assertEqual(q_resp["data"], "You have accepted this question")
 
     def test_downvote_question_success(self):
-        Questions.append({"id": 1, "topic": "my first", "body": "no body"})
+        QUESTION_LIST.append({"id": 1, "topic": "my first", "body": "no body"})
         response = self.client.patch(
             '/api/v1/questions/1/downvote')
         q_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(q_resp["data"], "You have rejected this question")
 
@@ -79,6 +80,6 @@ class TestQuestions(unittest.TestCase):
         response = self.client.patch(
             '/api/v1/questions/100/upvote')
         q_resp = json.loads(response.data.decode(
-            'utf-8', self.app.config['SECRET_KEY']))
+            'utf-8', KEY))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(q_resp["error"], "question not found")
