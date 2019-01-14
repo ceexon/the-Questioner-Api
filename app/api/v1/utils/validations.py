@@ -89,7 +89,7 @@ def token_required(func_tion):
             data = jwt.decode(token, KEY, algorithms="HS256")
             current_user = data["userName"]
 
-        except ValueError:
+        except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
             return jsonify({"error": "Token is invalid or expired"}), 401
 
         return func_tion(current_user, *args, **kwargs)
