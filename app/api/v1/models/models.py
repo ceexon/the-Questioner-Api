@@ -2,7 +2,6 @@
 
 import datetime
 import uuid
-import os
 from werkzeug.security import generate_password_hash
 from flask import jsonify, abort, make_response
 TIME_NOW = datetime.datetime.now()
@@ -75,15 +74,22 @@ class BaseModels:
         return exists
 
     def check_id(self, the_id):
+        """ conver string id from url to int and tries to find it in the data set """
         for data in self.d_b:
             try:
-                if data["id"] == int(the_id):
-                    return data
-            except ValueError:
-                abort(make_response(jsonify(
-                    {"status": 400, "error": "the id you parsed in invalid, can only be a number"}), 400))
+                if data["id"]:
+                    try:
+                        if data["id"] == int(the_id):
+                            return data
+                    except ValueError:
+                        abort(make_response(jsonify(
+                            {"status": 400,
+                             "error": "the id you parsed in invalid, can only be a number"}), 400))
+            except KeyError:
+                pass
         abort(make_response(
-            jsonify({"status": 404, "error": "requested id was not found or is out of range"}), 404))
+            jsonify({"status": 404,
+                     "error": "requested id was not found or is out of range"}), 404))
 
 
 class UserModels(BaseModels):
@@ -105,6 +111,14 @@ class UserModels(BaseModels):
         self.data["password"] = hashed_password
         return self.data
 
+    def get_current_user(self, p_id):
+        """ gets a user by their public_id """
+        for user in self.d_b:
+            if user["userName"] == p_id:
+                return user
+        abort(make_response(
+            jsonify({"status": 404, "error": "user not found try logging in again"})))
+
 
 class MeetUpModels(BaseModels):
     """ stores data for meetups """
@@ -116,7 +130,8 @@ class MeetUpModels(BaseModels):
             tags = self.data["tags"]
             if not tags:
                 abort(make_response(
-                    jsonify({"status": 422, "error": "at least 1 tag is required[#name_of_tag]"}), 422))
+                    jsonify({"status": 422,
+                             "error": "at least 1 tag is required[#name_of_tag]"}), 422))
             for tag in tags:
                 if not str(tag).strip():
                     abort(make_response(jsonify(
