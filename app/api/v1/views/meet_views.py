@@ -41,7 +41,7 @@ def view_meetup():
 
 @V1_MOD.route('/meetups/upcoming', methods=['GET'])
 def view_upcoming_meetup():
-    """ endpoint to view upcoming meetups """
+    """ endpoint to view all upcoming meetups """
     if MEETUP_LIST == []:
         abort(make_response(
             jsonify({"status": 404, "error": "no meetups found"}), 404))
@@ -52,7 +52,7 @@ def view_upcoming_meetup():
 @V1_MOD.route('/meetups/<m_id>', methods=['GET'])
 @token_required
 def view_single_meetup(current_user, m_id):
-    """ endpoint to view a single meetup by id """
+    """ endpoint to view a single meetup by id_int """
     the_id = MeetUpModels(MEETUP_LIST, "pass").check_id(m_id)
     user = UserModels(USER_LIST, "user").get_current_user(current_user)
     if not user:
