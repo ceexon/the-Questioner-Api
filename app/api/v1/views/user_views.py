@@ -54,7 +54,7 @@ def user_login():
         logged_in_user = validate.correct_details[0]
         exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         token = jwt.encode(
-            {"password": logged_in_user['password'], 'exp': exp}, KEY)
-        return jsonify({"status": 200, "message": "logged in successfully", "token": token.decode("utf-8")}), 200
+            {"userName": logged_in_user['userName'], 'exp': exp}, KEY,  algorithm='HS256')
+        return jsonify({"status": 200, "message": "logged in successfully", "token": token.decode("utf-8", KEY)}), 200
     except TypeError:
         return jsonify({"status": 417, "error": "Expecting Login data!!"}), 417
