@@ -1,7 +1,8 @@
-from app.api.v1.views.user_views import V1_MOD, time_now
-from app.api.v1.models.models import QUESTION_LIST
 import datetime
 from flask import Blueprint, request, jsonify, make_response
+from app.api.v1.views.user_views import V1_MOD
+from app.api.v1.models.models import QUESTION_LIST
+TIME_NOW = datetime.datetime.now()
 
 
 @V1_MOD.route('/questions', methods=['POST'])
@@ -30,7 +31,7 @@ def add_meetup_question():
         except:
             new_que["id"] = 1
 
-        new_que["createOn"] = time_now.strftime("%d %h %Y")
+        new_que["createOn"] = TIME_NOW.strftime("%d %h %Y")
         new_que["upvotes"] = 0
         new_que["downvotes"] = 0
 
