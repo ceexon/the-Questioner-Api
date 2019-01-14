@@ -1,14 +1,13 @@
 """ tests for user endpoints"""
 
 import os
-import datetime
 import json
+import datetime
 import unittest
-import pytest
 from app import create_app
 KEY = os.getenv("SECRET")
 
-time_now = datetime.datetime.now()
+TIME_NOW = datetime.datetime.now()
 
 
 class BaseTest(unittest.TestCase):
@@ -60,7 +59,7 @@ class BaseTest(unittest.TestCase):
             "email": "trevbk@gmail.com",
             "phone": "+254712345678",
             "password": "$$22BBkk",
-            "regDate": time_now.strftime("%D"),
+            "regDate": TIME_NOW.strftime("%D"),
             "isAdmin": True
         }
         self.not_confpass = {
