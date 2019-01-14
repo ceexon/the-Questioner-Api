@@ -1,60 +1,47 @@
-from app.api.v1.views.user_views import V1_MOD, time_now
-from app.api.v1.models.models import MEETUP_LIST
+""" api endpoints for working with meetups """
+
+from flask import request, jsonify, make_response, abort
+from app.api.v1.views.user_views import V1_MOD
+from app.api.v1.models.models import MEETUP_LIST, MeetUpModels, USER_LIST, UserModels
 from app.api.v1.utils.validations import token_required
-import datetime
-from flask import Blueprint, request, jsonify, make_response, abort
 
 
 @V1_MOD.route('/meetups', methods=['POST'])
-def create_meetup():
+@token_required
+def create_meetup(current_user):
+    """ endpoint to create new meetups """
     try:
         meet_data = request.get_json()
         if not meet_data:
             abort(make_response(
-                jsonify({"status": 400, "error": "No data found"}), 400))
-
-        try:
-            if not meet_data["topic"] or not meet_data["location"] or not meet_data["happenOn"]:
-                abort(make_response(jsonify(
-                    {"status": 422, "error": "These fields are required(topic,location,happenOn)"}), 422))
-
-        except:
-            abort(make_response(
-                jsonify({"status": 400, "error": "a key field is missing"}), 400))
-
-        new_meet = {}
-        for key in meet_data:
-            new_meet[key] = meet_data[key]
-
-        try:
-            latest = MEETUP_LIST[-1]
-            id = latest["id"]
-            id = id + 1
-            new_meet["id"] = id
-        except:
-            new_meet["id"] = 1
-
-        new_meet["createOn"] = time_now.strftime("%d %h %Y")
-
-        MEETUP_LIST.append(new_meet)
+                jsonify({"status": 400, "error": "No meetup data found"}), 400))
+        user = UserModels(USER_LIST, "user").get_current_user(current_user)
+        if not user["isAdmin"]:
+            return jsonify({"status": 403, "error": "you cannot create a meetup"}), 403
+        meets = MeetUpModels(MEETUP_LIST, meet_data)
+        meets.check_required_present(meets.meetup_required)
+        meets.prevent_metups_duplicates()
+        meets.check_tags()
+        new_meet = meets.autogen_id_and_defaults()
+        new_meet = meets.save_the_data()
         return jsonify({"status": 201, "data": new_meet}), 201
 
-    except:
+    except TypeError:
         abort(make_response(
             jsonify({"status": 404, "error": "Meetup data is required"}), 404))
 
 
 @V1_MOD.route('/meetups', methods=['GET'])
 def view_meetup():
-    if MEETUP_LIST == []:
-        abort(make_response(
-            jsonify({"status": 404, "error": "no meetups found"}), 404))
-
-    return jsonify({"status": 200, "data": MEETUP_LIST}), 200
+    """ endpoint to view all existing meetups """
+    meets_all = MeetUpModels(MEETUP_LIST, "pass")
+    all_meets = meets_all.show_all_meetups()
+    return jsonify({"status": 200, "data": all_meets}), 200
 
 
 @V1_MOD.route('/meetups/upcoming', methods=['GET'])
 def view_upcoming_meetup():
+    """ endpoint to view all upcoming meetups """
     if MEETUP_LIST == []:
         abort(make_response(
             jsonify({"status": 404, "error": "no meetups found"}), 404))
@@ -63,41 +50,25 @@ def view_upcoming_meetup():
 
 
 @V1_MOD.route('/meetups/<m_id>', methods=['GET'])
-def view_single_meetup(m_id):
-    if MEETUP_LIST == []:
-        abort(make_response(
-            jsonify({"status": 404, "error": "no meetups found"}), 404))
-
-    try:
-        m_id = int(m_id)
-    except:
-        abort(make_response(
-            jsonify({"status": 400, "error": "invalid meet id,use int"}), 400))
-
-    for meet in MEETUP_LIST:
-        if meet["id"] == m_id:
-            return jsonify({"status": 200, "data": meet})
-
-    abort(make_response(
-        jsonify({"status": 404, "data": "meetup not found"}), 404))
+@token_required
+def view_single_meetup(current_user, m_id):
+    """ endpoint to view a single meetup by id_int """
+    the_id = MeetUpModels(MEETUP_LIST, "pass").check_id(m_id)
+    user = UserModels(USER_LIST, "user").get_current_user(current_user)
+    if not user:
+        return jsonify({"status": 403, "error": "please login to access this meetup"}), 403
+    if the_id in MEETUP_LIST:
+        return jsonify({"status": 200, "data": the_id}), 200
+    return jsonify({"status": 404, "data": "meetup not found"}), 404
 
 
 @V1_MOD.route('/meetups/<m_id>', methods=['DELETE'])
-def delete_meetup(m_id):
-    if MEETUP_LIST == []:
-        abort(make_response(
-            jsonify({"status": 404, "error": "no meetups found"}), 404))
-
-    try:
-        m_id = int(m_id)
-    except:
-        abort(make_response(
-            jsonify({"status": 400, "error": "invalid meet id,use int"}), 400))
-
-    for meet in MEETUP_LIST:
-        if meet["id"] == m_id:
-            MEETUP_LIST.remove(meet)
-            return jsonify({"status": 200, "data": "meetup deleted successfully"}), 200
-
-    abort(make_response(
-        jsonify({"status": 404, "data": "meetup not found"}), 404))
+@token_required
+def delete_meetup(current_user, m_id):
+    """ endpoint to delete meetups by id """
+    to_delete = MeetUpModels(MEETUP_LIST, "pass").check_id(m_id)
+    user = UserModels(USER_LIST, "user").get_current_user(current_user)
+    if not user["isAdmin"]:
+        return jsonify({"status": 403, "error": "you cannot create a meetup"}), 403
+    MEETUP_LIST.remove(to_delete)
+    return jsonify({"status": 200, "data": "meetup delete successful"}), 200

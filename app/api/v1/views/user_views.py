@@ -6,7 +6,6 @@ import jwt
 from flask import Blueprint, request, jsonify
 from app.api.v1.models.models import USER_LIST, UserModels
 from app.api.v1.utils.validations import UserValidation
-time_now = datetime.datetime.now()
 V1_MOD = Blueprint('apiv1', __name__)
 KEY = os.getenv("SECRET")
 
@@ -54,7 +53,9 @@ def user_login():
         logged_in_user = validate.correct_details[0]
         exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         token = jwt.encode(
-            {"password": logged_in_user['password'], 'exp': exp}, KEY)
-        return jsonify({"status": 200, "message": "logged in successfully", "token": token.decode("utf-8")}), 200
+            {"userName": logged_in_user['userName'], 'exp': exp}, KEY,
+            algorithm='HS256')
+        return jsonify({"status": 200, "message": "logged in successfully",
+                        "token": token.decode("utf-8", KEY)}), 200
     except TypeError:
         return jsonify({"status": 417, "error": "Expecting Login data!!"}), 417

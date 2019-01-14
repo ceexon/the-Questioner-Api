@@ -28,10 +28,6 @@ class BaseModels:
             self.data["id"] = new_id
 
         self.data["createOn"] = TIME_NOW.strftime("%D")
-        hashed_password = generate_password_hash(
-            self.data['password'], method="sha256")
-        self.data["password"] = hashed_password
-        self.data['public_id'] = str(uuid.uuid4())
         return self.data
 
     def check_required_present(self, required_fields):
@@ -43,7 +39,7 @@ class BaseModels:
                 if not test_presence or not test_presence.strip():
                     if not test_presence:
                         error = field + " cannot be empty!!"
-                    elif not test_presence.strip():
+                    elif not str(test_presence).strip():
                         error = field + " cannot contain whitespace only"
                     abort(make_response(
                         jsonify({"status": 422, "error": error}), 422))
@@ -58,10 +54,14 @@ class BaseModels:
         self.d_b.append(self.data)
         return self.data
 
-    def delete_the_data(self):
+    def delete_the_data(self, an_id):
         """ delete selected data from the appropriate db """
-        self.d_b.remove(self.data)
-        return jsonify({"status": 200, "data": "user has been deleted"}), 200
+        for value in self.d_b:
+            if value["id"] == an_id:
+                self.d_b.pop(an_id)
+                return jsonify({"status": 200, "data": "deleted successfully"}), 200
+        abort(make_response(
+            jsonify({"status": 404, "error": "meetup not found"}), 404))
 
     def check_exists(self, field_to_check, the_value):
         """ checks existence of of given data in the given data model """
@@ -72,6 +72,24 @@ class BaseModels:
             if available:
                 exists = 1
         return exists
+
+    def check_id(self, the_id):
+        """ conver string id from url to int and tries to find it in the data set """
+        for data in self.d_b:
+            try:
+                if data["id"]:
+                    try:
+                        if data["id"] == int(the_id):
+                            return data
+                    except ValueError:
+                        abort(make_response(jsonify(
+                            {"status": 400,
+                             "error": "the id you parsed in invalid, can only be a number"}), 400))
+            except KeyError:
+                pass
+        abort(make_response(
+            jsonify({"status": 404,
+                     "error": "requested id was not found or is out of range"}), 404))
 
 
 class UserModels(BaseModels):
@@ -87,4 +105,52 @@ class UserModels(BaseModels):
         if not self.d_b:
             self.data["isAdmin"] = True
 
+        self.data['public_id'] = str(uuid.uuid4())
+        hashed_password = generate_password_hash(
+            self.data['password'], method="sha256")
+        self.data["password"] = hashed_password
         return self.data
+
+    def get_current_user(self, p_id):
+        """ gets a user by their public_id """
+        for user in self.d_b:
+            if user["userName"] == p_id:
+                return user
+        abort(make_response(
+            jsonify({"status": 404, "error": "user not found try logging in again"})))
+
+
+class MeetUpModels(BaseModels):
+    """ stores data for meetups """
+    meetup_required = ["location", "happenOn", "topic"]
+
+    def check_tags(self):
+        """ checks if data has all required fields and their values """
+        try:
+            tags = self.data["tags"]
+            if not tags:
+                abort(make_response(
+                    jsonify({"status": 422,
+                             "error": "at least 1 tag is required[#name_of_tag]"}), 422))
+            for tag in tags:
+                if not str(tag).strip():
+                    abort(make_response(jsonify(
+                        {"status": 422, "error": "tag input cannot be empty whitespace!!"}), 422))
+        except KeyError:
+            abort(make_response(
+                jsonify({"status": 400, "error": "tag field is missing"}), 400))
+
+    def prevent_metups_duplicates(self):
+        """" prevent duplication of meetups """
+        for meet in self.d_b:
+            if meet["location"] == self.data["location"] and meet["happenOn"] == self.data["happenOn"]:
+                error = "you may be trying to make a meetup duplicate, please confirm!!"
+                abort(make_response(
+                    jsonify({"status": 409, "error": error}), 409))
+
+    def show_all_meetups(self):
+        """ generate all available meetups """
+        if not self.d_b:
+            abort(make_response(
+                jsonify({"status": 404, "error": "no meetups found"}), 404))
+        return self.d_b

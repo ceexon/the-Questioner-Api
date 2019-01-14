@@ -7,6 +7,7 @@ import jwt
 from werkzeug.security import check_password_hash
 from flask import abort, make_response, jsonify, request
 from ..models.models import USER_LIST, UserModels
+KEY = os.getenv("SECRET")
 
 EMAIL_REGEX = re.compile(r'(\w+[.|\w])*@(\w+[.])*\w+')
 PASSWORD_RE = re.compile('^(?=.*[!$?])(?=.*[a-z])(?=.*[A-Z]).{8}$')
@@ -45,7 +46,8 @@ class UserValidation():
             pass
         else:
             abort(make_response(jsonify(
-                {"status": 400, "error": "password should have number, upper and lower letters + a special character"}), 400))
+                {"status": 400,
+                 "error": "password should have number, upper and lower letters + a special character"}), 400))
 
     def check_signup_exists(self):
         """ check if user signing up exists """
@@ -58,11 +60,11 @@ class UserValidation():
                 jsonify({"status": 409, "error": "user with that email already exists"}), 409))
 
     def confirm_login(self, login_choice):
+        """ checks whether the login infor is a username or email """
         if "@" in login_choice:
             login_choice = "email"
         else:
             login_choice = "userName"
-
         self.correct_details = [user for user in USER_LIST if self.data["userlog"]
                                 == user[login_choice] and check_password_hash(user["password"], self.data['password'])]
         if self.correct_details == []:
@@ -81,14 +83,14 @@ def token_required(func_tion):
             token = request.headers['x-access-token']
 
         if not token:
-            abort(make_response(jsonify({"message": "Token is missing"}), 401))
+            abort(make_response(jsonify({"error": "Token is missing"}), 401))
 
         try:
-            data = jwt.decode(token, os.getenv("SECRET_KEY"))
+            data = jwt.decode(token, KEY, algorithms="HS256")
             current_user = data["userName"]
 
-        except ValueError:
-            return jsonify({"message": "Token is invalid or expired"}), 401
+        except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
+            return jsonify({"error": "Token is invalid or expired"}), 401
 
         return func_tion(current_user, *args, **kwargs)
     return decorated

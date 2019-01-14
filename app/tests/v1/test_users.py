@@ -1,14 +1,13 @@
 """ tests for user endpoints"""
 
 import os
-import datetime
 import json
+import datetime
 import unittest
-import pytest
 from app import create_app
 KEY = os.getenv("SECRET")
 
-time_now = datetime.datetime.now()
+TIME_NOW = datetime.datetime.now()
 
 
 class BaseTest(unittest.TestCase):
@@ -60,7 +59,7 @@ class BaseTest(unittest.TestCase):
             "email": "trevbk@gmail.com",
             "phone": "+254712345678",
             "password": "$$22BBkk",
-            "regDate": time_now.strftime("%D"),
+            "regDate": TIME_NOW.strftime("%D"),
             "isAdmin": True
         }
         self.not_confpass = {
@@ -350,6 +349,7 @@ class TestUserLogin(unittest.TestCase):
 
     def test_successful_login_with_username(self):
         """ test user login successfully using username """
+        print(os.getenv("SECRET"))
         response = self.client.post(
             '/api/v1/login', data=json.dumps(self.userlogin1), content_type="application/json")
         result = json.loads(response.data.decode("UTF-8"), KEY)
