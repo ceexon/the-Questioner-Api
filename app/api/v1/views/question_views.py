@@ -10,6 +10,7 @@ VOTERS = []
 @V1_MOD.route('/meetups/<m_id>/questions', methods=['POST'])
 @token_required
 def add_meetup_question(current_user, m_id):
+    """ post a question to a meetup endpoint """
     try:
         q_data = request.get_json()
         if not q_data:
@@ -33,6 +34,7 @@ def add_meetup_question(current_user, m_id):
 @V1_MOD.route('/meetups/<m_id>/questions', methods=["GET"])
 @token_required
 def get_all_questions(current_user, m_id):
+    """ get all meetup questions endpoint  """
     Question(MEETUP_LIST, "pass").check_id(m_id)
     return jsonify({"Questions": QUESTION_LIST}), 200
 
@@ -40,6 +42,7 @@ def get_all_questions(current_user, m_id):
 @V1_MOD.route('/meetups/<m_id>/questions/<q_id>', methods=["GET"])
 @token_required
 def get_a_question_by_id(current_user, m_id, q_id):
+    """ get question by id endpoint """
     Question(MEETUP_LIST, "pass").check_id(m_id)
     Question(QUESTION_LIST, "pass").check_id(q_id)
     for question in QUESTION_LIST:
@@ -50,6 +53,7 @@ def get_a_question_by_id(current_user, m_id, q_id):
 @V1_MOD.route("/meetups/<m_id>/questions/<q_id>/upvote", methods=["PATCH"])
 @token_required
 def upvote_quiz(current_user, m_id, q_id):
+    """ upvote question endpoint """
     Question(QUESTION_LIST, "pass").check_id(m_id)
     question = Question(QUESTION_LIST, "pass").check_id(q_id)
     voted = User(USER_LIST, "pass").get_current_user(current_user)
@@ -63,6 +67,7 @@ def upvote_quiz(current_user, m_id, q_id):
 @V1_MOD.route("/meetups/<m_id>/questions/<q_id>/downvote", methods=["PATCH"])
 @token_required
 def downvote_quiz(current_user, m_id, q_id):
+    """ downvote question endpoint """
     Question(QUESTION_LIST, "pass").check_id(m_id)
     question = Question(QUESTION_LIST, "pass").check_id(q_id)
     voted = User(USER_LIST, "pass").get_current_user(current_user)
