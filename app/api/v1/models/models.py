@@ -11,11 +11,11 @@ MEETUP_LIST = []
 QUESTION_LIST = []
 
 
-class BaseModels:
+class BaseModel:
     """"This performs all basic actions performed on all data sets"""
 
     def __init__(self, data_model, view_data):
-        """" initialising parameters to be passed in the BaseModels object """
+        """" initialising parameters to be passed in the BaseModel object """
         self.d_b = data_model
         self.data = view_data
 
@@ -95,7 +95,7 @@ class BaseModels:
                      "error": "requested id was not found or is out of range"}), 404))
 
 
-class UserModels(BaseModels):
+class User(BaseModel):
     """ Model for user data """
 
     required_signup = ["firstName", "lastName",
@@ -123,7 +123,7 @@ class UserModels(BaseModels):
             jsonify({"status": 404, "error": "user not found try logging in again"})))
 
 
-class MeetUpModels(BaseModels):
+class MeetUp(BaseModel):
     """ stores data for meetups """
     meetup_required = ["location", "happenOn", "topic"]
 
@@ -159,7 +159,7 @@ class MeetUpModels(BaseModels):
         return self.d_b
 
 
-class Question(BaseModels):
+class Question(BaseModel):
     """ Adds Questions to the data structure """
     required_fields = ["topic", "body"]
 

@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, request, jsonify, make_response
 from app.api.v1.views.user_views import V1_MOD
-from app.api.v1.models.models import QUESTION_LIST, MEETUP_LIST, Question, UserModels, USER_LIST
+from app.api.v1.models.models import QUESTION_LIST, MEETUP_LIST, Question, User, USER_LIST
 from ..utils.validations import token_required, QuestionValidation
 TIME_NOW = datetime.datetime.now()
 VOTERS = []
@@ -18,7 +18,7 @@ def add_meetup_question(current_user, m_id):
         Question(MEETUP_LIST, "pass").check_id(m_id)
         a_question = Question(QUESTION_LIST, q_data)
         a_question.check_required_present(Question.required_fields)
-        asker = UserModels(USER_LIST, "user").get_current_user(current_user)
+        asker = User(USER_LIST, "user").get_current_user(current_user)
         new_question = a_question.autogen_id_and_defaults()
         new_question["meetup"] = int(m_id)
         new_question["user"] = asker["id"]
@@ -52,7 +52,7 @@ def get_a_question_by_id(current_user, m_id, q_id):
 def upvote_quiz(current_user, m_id, q_id):
     Question(QUESTION_LIST, "pass").check_id(m_id)
     question = Question(QUESTION_LIST, "pass").check_id(q_id)
-    voted = UserModels(USER_LIST, "pass").get_current_user(current_user)
+    voted = User(USER_LIST, "pass").get_current_user(current_user)
     if voted in VOTERS:
         return jsonify({"status": 403, "message": "You cannot vote more than once"}), 403
     question["upvotes"] += 1
@@ -65,7 +65,7 @@ def upvote_quiz(current_user, m_id, q_id):
 def downvote_quiz(current_user, m_id, q_id):
     Question(QUESTION_LIST, "pass").check_id(m_id)
     question = Question(QUESTION_LIST, "pass").check_id(q_id)
-    voted = UserModels(USER_LIST, "pass").get_current_user(current_user)
+    voted = User(USER_LIST, "pass").get_current_user(current_user)
     if voted in VOTERS:
         return jsonify({"status": 403, "message": "You cannot vote more than once"}), 403
     question["downvotes"] += 1

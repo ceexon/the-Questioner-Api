@@ -6,7 +6,7 @@ from functools import wraps
 import jwt
 from werkzeug.security import check_password_hash
 from flask import abort, make_response, jsonify, request
-from ..models.models import USER_LIST, UserModels
+from ..models.models import USER_LIST, User
 KEY = os.getenv("SECRET")
 
 EMAIL_REGEX = re.compile(r'(\w+[.|\w])*@(\w+[.])*\w+')
@@ -51,7 +51,7 @@ class UserValidation():
 
     def check_signup_exists(self):
         """ check if user signing up exists """
-        in_users = UserModels(USER_LIST, self.data)
+        in_users = User(USER_LIST, self.data)
         if in_users.check_exists("userName", self.data["userName"]):
             abort(make_response(jsonify(
                 {"status": 409, "error": "user with the username already exists"}), 409))
