@@ -4,7 +4,7 @@ import os
 import datetime
 import jwt
 from flask import Blueprint, request, jsonify
-from app.api.v1.models.models import USER_LIST, UserModels
+from app.api.v1.models.models import USER_LIST, User
 from app.api.v1.utils.validations import UserValidation
 V1_MOD = Blueprint('apiv1', __name__)
 KEY = os.getenv("SECRET")
@@ -18,7 +18,7 @@ def user_signup():
         if not user_data:
             return jsonify({"status": 404, "error": "no userdata data!!"}), 404
         validate = UserValidation(user_data)
-        users = UserModels(USER_LIST, user_data)
+        users = User(USER_LIST, user_data)
         users.check_required_present(users.required_signup)
         validate.valid_username()
         validate.valid_email()
@@ -46,7 +46,7 @@ def user_login():
         if not log_data:
             return jsonify({"status": 404, "error": "No data found"}), 404
 
-        users = UserModels(USER_LIST, log_data)
+        users = User(USER_LIST, log_data)
         validate = UserValidation(log_data)
         users.check_required_present(users.required_login)
         validate.confirm_login(log_data["userlog"])

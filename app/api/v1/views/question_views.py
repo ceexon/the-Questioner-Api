@@ -1,70 +1,78 @@
 import datetime
 from flask import Blueprint, request, jsonify, make_response
 from app.api.v1.views.user_views import V1_MOD
-from app.api.v1.models.models import QUESTION_LIST
+from app.api.v1.models.models import QUESTION_LIST, MEETUP_LIST, Question, User, USER_LIST
+from ..utils.validations import token_required, QuestionValidation
 TIME_NOW = datetime.datetime.now()
+VOTERS = []
 
 
-@V1_MOD.route('/questions', methods=['POST'])
-def add_meetup_question():
+@V1_MOD.route('/meetups/<m_id>/questions', methods=['POST'])
+@token_required
+def add_meetup_question(current_user, m_id):
+    """ post a question to a meetup endpoint """
     try:
         q_data = request.get_json()
         if not q_data:
-            return jsonify({"status": 204, "error": "No data found"}), 204
+            return jsonify({"status": 404, "error": "No data found"}), 404
 
-        try:
-            if not q_data["topic"] or not q_data["body"]:
-                return jsonify({"status": 422, "error": "These fields are required(topic,body)"}), 422
-
-        except:
-            return jsonify({"status": 400, "error": "a key field is missing"}), 400
-
-        new_que = {}
-        for key in q_data:
-            new_que[key] = q_data[key]
-
-        try:
-            latest = QUESTION_LIST[-1]
-            id = latest["id"]
-            id = id + 1
-            new_que["id"] = id
-        except:
-            new_que["id"] = 1
-
-        new_que["createOn"] = TIME_NOW.strftime("%d %h %Y")
-        new_que["upvotes"] = 0
-        new_que["downvotes"] = 0
-
-        QUESTION_LIST.append(new_que)
-        return jsonify({"status": 201, "data": "question added successfully"}), 201
-
-    except:
-        return jsonify({"status": 204, "error": "Meetup data is required"}), 204
+        Question(MEETUP_LIST, "pass").check_id(m_id)
+        a_question = Question(QUESTION_LIST, q_data)
+        a_question.check_required_present(Question.required_fields)
+        asker = User(USER_LIST, "user").get_current_user(current_user)
+        new_question = a_question.autogen_id_and_defaults()
+        new_question["meetup"] = int(m_id)
+        new_question["user"] = asker["id"]
+        new_question["upvotes"] = 0
+        new_question["downvotes"] = 0
+        new_question = a_question.save_the_data()
+        return jsonify({"status": 201, "message": "question added successfully", "Question": new_question}), 201
+    except TypeError:
+        return jsonify({"status": 417, "error": "Question data is required"}), 417
 
 
-@V1_MOD.route("/questions/<q_id>/upvote", methods=["PATCH"])
-def upvote_quiz(q_id):
-    try:
-        q_id = int(q_id)
-    except:
-        return jsonify({"status": 400, "error": "invalid question id"}), 400
+@V1_MOD.route('/meetups/<m_id>/questions', methods=["GET"])
+@token_required
+def get_all_questions(current_user, m_id):
+    """ get all meetup questions endpoint  """
+    Question(MEETUP_LIST, "pass").check_id(m_id)
+    return jsonify({"Questions": QUESTION_LIST}), 200
 
+
+@V1_MOD.route('/meetups/<m_id>/questions/<q_id>', methods=["GET"])
+@token_required
+def get_a_question_by_id(current_user, m_id, q_id):
+    """ get question by id endpoint """
+    Question(MEETUP_LIST, "pass").check_id(m_id)
+    Question(QUESTION_LIST, "pass").check_id(q_id)
     for question in QUESTION_LIST:
-        if question["id"] == q_id:
-            return jsonify({"status": 202, "data": "You have accepted this question"}), 202
-
-    return jsonify({"status": 404, "error": "question not found"}), 404
+        if question["id"] == int(q_id):
+            return jsonify({"Question": question, "status": 200}), 200
 
 
-@V1_MOD.route("/questions/<q_id>/downvote", methods=["PATCH"])
-def downvote_quiz(q_id):
-    try:
-        q_id = int(q_id)
-    except:
-        return jsonify({"status": 400, "error": "invalid question id"}), 400
+@V1_MOD.route("/meetups/<m_id>/questions/<q_id>/upvote", methods=["PATCH"])
+@token_required
+def upvote_quiz(current_user, m_id, q_id):
+    """ upvote question endpoint """
+    Question(QUESTION_LIST, "pass").check_id(m_id)
+    question = Question(QUESTION_LIST, "pass").check_id(q_id)
+    voted = User(USER_LIST, "pass").get_current_user(current_user)
+    if voted in VOTERS:
+        return jsonify({"status": 403, "message": "You cannot vote more than once"}), 403
+    question["upvotes"] += 1
+    VOTERS.append(voted)
+    return jsonify({"status": 201, "Question": question}), 201
 
-    for question in QUESTION_LIST:
-        if question["id"] == q_id:
-            return jsonify({"status": 200, "data": "You have rejected this question"}), 200
 
-    return jsonify({"status": 404, "error": "question not found"}), 404
+@V1_MOD.route("/meetups/<m_id>/questions/<q_id>/downvote", methods=["PATCH"])
+@token_required
+def downvote_quiz(current_user, m_id, q_id):
+    """ downvote question endpoint """
+    Question(QUESTION_LIST, "pass").check_id(m_id)
+    question = Question(QUESTION_LIST, "pass").check_id(q_id)
+    voted = User(USER_LIST, "pass").get_current_user(current_user)
+    if voted in VOTERS:
+        return jsonify({"status": 403, "message": "You cannot vote more than once"}), 403
+    question["downvotes"] += 1
+    VOTERS.append(voted)
+    return jsonify({"status": 201, "Question": question}), 201

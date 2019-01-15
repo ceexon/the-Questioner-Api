@@ -11,11 +11,11 @@ MEETUP_LIST = []
 QUESTION_LIST = []
 
 
-class BaseModels:
+class BaseModel:
     """"This performs all basic actions performed on all data sets"""
 
     def __init__(self, data_model, view_data):
-        """" initialising parameters to be passed in the BaseModels object """
+        """" initialising parameters to be passed in the BaseModel object """
         self.d_b = data_model
         self.data = view_data
 
@@ -75,6 +75,9 @@ class BaseModels:
 
     def check_id(self, the_id):
         """ conver string id from url to int and tries to find it in the data set """
+        if not self.d_b:
+            abort(make_response(
+                jsonify({"status": 404, "error": "No data was found"})))
         for data in self.d_b:
             try:
                 if data["id"]:
@@ -92,7 +95,7 @@ class BaseModels:
                      "error": "requested id was not found or is out of range"}), 404))
 
 
-class UserModels(BaseModels):
+class User(BaseModel):
     """ Model for user data """
 
     required_signup = ["firstName", "lastName",
@@ -120,7 +123,7 @@ class UserModels(BaseModels):
             jsonify({"status": 404, "error": "user not found try logging in again"})))
 
 
-class MeetUpModels(BaseModels):
+class MeetUp(BaseModel):
     """ stores data for meetups """
     meetup_required = ["location", "happenOn", "topic"]
 
@@ -154,3 +157,17 @@ class MeetUpModels(BaseModels):
             abort(make_response(
                 jsonify({"status": 404, "error": "no meetups found"}), 404))
         return self.d_b
+
+
+class Question(BaseModel):
+    """ Adds Questions to the data structure """
+    required_fields = ["topic", "body"]
+
+    def prevent_metups_duplicates(self):
+        """" prevent duplication of meetups """
+        for i, question in enumerate(self.d_b):
+            if question["topic"] == self.data["topic"] and question["body"] == self.data["body"]:
+                error = "a similar question for the meetup exists, please check question{}".format(
+                    i)
+                abort(make_response(
+                    jsonify({"status": 409, "error": error}), 409))
