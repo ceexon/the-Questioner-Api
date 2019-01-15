@@ -75,6 +75,9 @@ class BaseModels:
 
     def check_id(self, the_id):
         """ conver string id from url to int and tries to find it in the data set """
+        if not self.d_b:
+            abort(make_response(
+                jsonify({"status": 404, "error": "No data was found"})))
         for data in self.d_b:
             try:
                 if data["id"]:
@@ -154,3 +157,17 @@ class MeetUpModels(BaseModels):
             abort(make_response(
                 jsonify({"status": 404, "error": "no meetups found"}), 404))
         return self.d_b
+
+
+class Question(BaseModels):
+    """ Adds Questions to the data structure """
+    required_fields = ["topic", "body"]
+
+    def prevent_metups_duplicates(self):
+        """" prevent duplication of meetups """
+        for i, question in enumerate(self.d_b):
+            if question["topic"] == self.data["topic"] and question["body"] == self.data["body"]:
+                error = "a similar question for the meetup exists, please check question{}".format(
+                    i)
+                abort(make_response(
+                    jsonify({"status": 409, "error": error}), 409))
