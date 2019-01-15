@@ -72,3 +72,34 @@ def delete_meetup(current_user, m_id):
         return jsonify({"status": 403, "error": "you cannot create a meetup"}), 403
     MEETUP_LIST.remove(to_delete)
     return jsonify({"status": 200, "data": "meetup delete successful"}), 200
+
+
+@V1_MOD.route('/meetups/<m_id>/rsvp', methods=['POST'])
+@token_required
+def rsvp_meetup(current_user, m_id):
+    """ endpoint to delete meetups by id """
+    MeetUpModels(MEETUP_LIST, "pass").check_id(m_id)
+    user = UserModels(USER_LIST, "user").get_current_user(current_user)
+    try:
+        data = request.get_json()
+    except ValueError:
+        return jsonify({"status": 404, "error": "no data found"}), 404
+    try:
+        value = data["rsvp"].casefold()
+    except KeyError:
+        return jsonify({"status": 400, "error": "rsvp field is missing"})
+    if value == "yes":
+        message = "YES"
+    elif value == "no":
+        message = "NO"
+    elif value == "maybe":
+        message = "NOT SURE"
+    else:
+        return jsonify({"status": 400, "error": "please select yes, no or maybe"}), 400
+    if not user:
+        return jsonify({"status": 403, "error": "please login to access this meetup"}), 403
+    rsvp = {}
+    MeetUpModels(MEETUP_LIST, rsvp).autogen_id_and_defaults()
+    rsvp["meetup"] = m_id
+    rsvp["user"] = user["id"]
+    return jsonify({"status": 201, "data": "You respondes " + message, "rsvp": rsvp}), 201
