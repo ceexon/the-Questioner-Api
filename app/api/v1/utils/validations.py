@@ -73,24 +73,24 @@ class UserValidation():
                 jsonify({"status": 401, "error": error}), 401))
 
 
+class QuestionValidation(UserValidation):
+    """ class that validates question input and adds default fields """
+    pass
+
+
 def token_required(func_tion):
     """ to check authentication token"""
     @wraps(func_tion)
     def decorated(*args, **kwargs):
         token = None
-
         if "x-access-token" in request.headers:
             token = request.headers['x-access-token']
-
         if not token:
             abort(make_response(jsonify({"error": "Token is missing"}), 401))
-
         try:
             data = jwt.decode(token, KEY, algorithms="HS256")
             current_user = data["userName"]
-
-        except (jwt.InvalidTokenError, jwt.ExpiredSignatureError):
+        except (jwt.InvalidTokenError, jwt.ExpiredSignatureError, TypeError):
             return jsonify({"error": "Token is invalid or expired"}), 401
-
         return func_tion(current_user, *args, **kwargs)
     return decorated
