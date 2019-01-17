@@ -1,5 +1,9 @@
 """ API config File """
 import os
+db_user = os.getenv("DB_USER")
+db_pass = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST")
+db_name = os.getenv("DB_NAME")
 
 
 class Config(object):
@@ -22,6 +26,7 @@ class StagingConfig(Config):
 class TestingConfig(Config):
     """ Configuration for the testing environment """
     TESTING = True
+    DB_TEST = os.getenv("DB_URL_TEST")
 
 
 class ProductionConfig(Config):

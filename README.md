@@ -2,8 +2,6 @@
 
 The questioner app is a web that allows users who are attendees of a meetup to be able to raise questions they would like to discuss in the meetup. The questions are then voted on by fellow users to determine which has more priority over the others. The question with most votes is deemed as one with a highest priority.
 
-## QUESTIONER API V1
-
 ---
 
 ## Badges
@@ -63,13 +61,14 @@ The questioner app is a web that allows users who are attendees of a meetup to b
 8. Run the app
 
    > `python3 run.py`
-   
-9. Tsting 
+
+9. Tsting
 
    > `python3 -m pytest`
-   
 
 ## Endpoints to use on postman
+
+## QUESTIONER API V1
 
 | Endpoints                                  |               Functions                |
 | ------------------------------------------ | :------------------------------------: |
@@ -88,6 +87,26 @@ The questioner app is a web that allows users who are attendees of a meetup to b
 | POST/api/v1/questions/&lt;id&gt;/comment   |         comment on a question          |
 | GET/api/v1/questions/&lt;id&gt;/comment    |    view all comments on a question     |
 | DELETE/api/v1/meetups/&lt;id&gt;           |            delete a meetups            |
+
+## QUESTIONER API V2
+
+| Endpoints                                  |               Functions                |
+| ------------------------------------------ | :------------------------------------: |
+| POST/api/v2/signup                         |            create new user             |
+| POST/api/v2/login                          |        sign in to your account         |
+| POST/api/v2/meetups                        |             create meetups             |
+| GET/api/v2/meetups                         |            get all meetupss            |
+| GET/api/v2/meetups/&lt;id&gt;              |         get a specific meetups         |
+| GET/api/v2/meetups/upcoming                |        get all upcoming meetups        |
+| POST/api/v2/questions                      |       add question for a meetups       |
+| GET/api/v2/questions                       | view all questions for a given meetups |
+| POST/api/v2/meetups/&lt;id&gt;/rsvp        |     respond to meetups invitation      |
+| PATCH/api/v2/questions/&lt;id&gt;/upvote   |           upvote a question            |
+| PATCH/api/v2/questions/&lt;id&gt;/downvote |          downvote a question           |
+| POST/api/v2/questions/&lt;id&gt;/          |        view a specific question        |
+| POST/api/v2/questions/&lt;id&gt;/comment   |         comment on a question          |
+| GET/api/v2/questions/&lt;id&gt;/comment    |    view all comments on a question     |
+| DELETE/api/v2/meetups/&lt;id&gt;           |            delete a meetups            |
 
 ## Authors
 
